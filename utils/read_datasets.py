@@ -35,6 +35,9 @@ def load_dataset(dataset='disease', mode='train'):
     #data = pd.read_csv(os.path.join(DATASET, path), sep=' ', header=None) #misses some rows for some reason.
     return data
 
+def get_dataset_folder():
+    return DATASET
+
 def get_statistics(data, true_label='I-Disease'):
     num_train = len(data)
     num_true = len(data.loc[data[3] == true_label])
