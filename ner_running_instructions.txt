@@ -11,3 +11,8 @@ srun --partition=titanx-short --gres=gpu:1 ./bin/preprocess.sh conf/phenotype_en
 srun --partition=titanx-short --gres=gpu:1 ./bin/train-cnn.sh conf/phenotype_enhanced/bilstm-viterbi_multi_gold.conf
 
 srun --partition=titanx-short --gres=gpu:1 ./bin/eval-cnn.sh conf/phenotype_enhanced/bilstm-viterbi_multi_gold.conf test models/bilstm-viterbi_phenotype_enhanced_one_rnd_/.tf --print_preds data/phenotype_enhanced/annotations.txt
+
+
+sbatch --job-name=train_NER_pheno_enhanced --output=logs/train_NER_pheno_enhanced_%j.txt -e logs/train_NER_pheno_enhanced_%j.err --partition=titanx-short --gres=gpu:1 --mem=30G ./bin/train-cnn.sh conf/phenotype_enhanced/bilstm-viterbi_multi_gold.conf 
+
+srun --partition=titanx-short --gres=gpu:1 ./bin/eval-cnn.sh conf/phenotype_enhanced/bilstm-viterbi_multi_gold.conf test models/bilstm-viterbi_phenotype_enhanced_one_rnd_/.tf --print_preds data/phenotype_enhanced/annotations.txt
