@@ -1,0 +1,22 @@
+module load python2/current
+module load tensorflow/1.7.0
+
+cd dilated-cnn-ner
+export DILATED_CNN_NER_ROOT=`pwd`
+export DATA_DIR=data
+
+
+srun --partition=titanx-short --gres=gpu:1 ./bin/preprocess.sh conf/phenotype_enhanced/bilstm-viterbi_multi_gold.conf
+
+srun --partition=titanx-short --gres=gpu:1 ./bin/train-cnn.sh conf/phenotype_enhanced/bilstm-viterbi_multi_gold.conf
+
+srun --partition=titanx-short --gres=gpu:1 ./bin/eval-cnn.sh conf/phenotype_enhanced/bilstm-viterbi_multi_gold.conf test models/bilstm-viterbi_phenotype_enhanced_one_rnd_/.tf --print_preds data/phenotype_enhanced/annotations.txt
+
+
+sbatch --job-name=train_NER_pheno_enhanced --output=logs/train_NER_pheno_enhanced_%j.txt -e logs/train_NER_pheno_enhanced_%j.err --partition=titanx-short --gres=gpu:1 --mem=30G ./bin/train-cnn.sh conf/phenotype_enhanced/bilstm-viterbi_multi_gold.conf 
+
+srun --partition=titanx-short --gres=gpu:1 ./bin/eval-cnn.sh conf/phenotype_enhanced/bilstm-viterbi_multi_gold.conf test models/bilstm-viterbi_phenotype_enhanced_one_rnd_/.tf --print_preds data/phenotype_enhanced/annotations.txt
+
+srun --partition=titanx-short --gres=gpu:1 script_to_run.sh
+
+sbatch --job-name=train_NER_pheno_enhanced --output=logs/train_NER_pheno_enhanced_GLAD.txt -e logs/train_NER_pheno_enhanced_GLAD.err --partition=titanx-long --gres=gpu:1 --mem=30G script_to_run_GLAD.sh
