@@ -40,7 +40,7 @@ with open(data_file) as f:
 # In[23]:
 
 
-text = '' # the output of this script
+text = '\n' # the output of this script
 
 
 # In[24]:
