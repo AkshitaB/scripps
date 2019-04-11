@@ -89,7 +89,7 @@ for i, line in enumerate(corpus):
 # In[38]:
 
 
-with open('ready_dataset.txt', 'w') as f:
+with open('ready_dataset_threshold_{}.txt'.format(threshold), 'w') as f:
     f.write(text)
 
 
