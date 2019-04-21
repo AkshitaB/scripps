@@ -1,0 +1,80 @@
+1. download/clone dilated-cnn-ner
+2. copy the phenotype_enhanced folder(committed on github) containing config files to the conf folder in dilated-cnn-ner.
+3. this contains a bunch of config files, but the one relevant for running stuff is phenotype_enhanced_multi_gold.conf. within it, there's a field called data_files. The first file in that list is used as the training data. I've set it to phenotype_enhanced_training_abstract_CoNLL.txt, which is supposed to contain the HPO training data + our new labels.
+4. the data itself is supposed to be in a folder called phenotype_enhanced in the dilated-cnn-ner/data folder (make sure to keep the name same; otherwise there will be multiple other changes required in the config files).
+5. in this phenotype_enhanced folder, add HPO training, dev, and test files. Then add your new labels files here.
+6. create the phenotype_enhanced_training_abstract_CoNLL.txt file by doing "cat HPO_training_abstract_CoNLL.txt new_labels.txt > phenotype_enhanced_training_abstract_CoNLL.txt"
+7. copy pubmed embeddings and pubmed conf from HS's drive:
+cp /mnt/nfs/scratch1/hschang/active_learning/dilated-cnn-ner/data/embeddings/pubmed_w2v_text10_50d.txt  dilated-cnn-ner/data/embeddings
+cp /mnt/nfs/scratch1/hschang/active_learning/dilated-cnn-ner/conf/PubMed-embeddings_50.conf dilated-cnn-ner/conf
+
+8. In bin/preprocess.sh, change:
+lower_param=""
+if [[ "$lowercase" == "true" ]]; then
+    lower_param="--lower"
+    lower_param="--lowercase"
+fi
+ 
+predict_pad_param=""
+
+9. then run the following:
+
+module load python2/current
+module load tensorflow/1.7.0
+
+cd dilated-cnn-ner
+export DILATED_CNN_NER_ROOT=`pwd`
+export DATA_DIR=data
+
+
+srun --partition=titanx-short --gres=gpu:1 ./bin/preprocess.sh conf/phenotype_enhanced/bilstm-viterbi_multi_gold.conf
+
+srun --partition=titanx-short --gres=gpu:1 ./bin/train-cnn.sh conf/phenotype_enhanced/bilstm-viterbi_multi_gold.conf
+
+srun --partition=titanx-short --gres=gpu:1 ./bin/eval-cnn.sh conf/phenotype_enhanced/bilstm-viterbi_multi_gold.conf test models/bilstm-viterbi_phenotype_enhanced_one_rnd_/.tf --print_preds data/phenotype_enhanced/annotations.txt
+
+if some task fails on account of memory, add --mem=30G to the command BEFORE ./bin/<script.sh> part.
+
+The last eval script will give you the final F1-score.
+
+Part 2: getting the new labels from the PGM model.
+
+I've run the code already, and theta values are stored in theta_values.txt (committed).
+
+To obtain new labels, go to utils folder. There's a script called new_labels.py Run it as follows:
+
+python new_labels.py path/to/theta_values.txt <the_threshold_you_want> <optional_str_to_mark_that_threshold_for_your_ref>
+
+eg. python new_labels.py theta_values.txt -1.0 midpoint_of_theta_range
+
+this will save a file at
+Saved at ../dataset/M2C_new_labels/midpoint_of_theta_range_m2c_new_labels_-1.0.txt
+Number of new phenotype labels: 603
+
+the current theta range is here: (-1.60996339599, 1.39252637088) so we can try values in this range.
+
+sbatch --job-name=train_NER_pheno_enhanced --output=logs/train_NER_pheno_enhanced_%j.txt -e logs/train_NER_pheno_enhanced_%j.err --partition=titanx-short --gres=gpu:1 --mem=30G --mail-user=rohpaul@cs.umass.edu script_to_run.sh
+
+sbatch --job-name=train_NER_pheno_enhanced --output=logs/train_NER_pheno_enhanced_%j.txt -e logs/train_NER_pheno_enhanced_%j.err --partition=titanx-long --gres=gpu:2 --mem=30G script_to_run.sh
+
+scp -oProxyCommand="ssh -W %h:%p rohpaul@gypsum-gateway.cs.umass.edu" rohpaul@gypsum.cs.umass.edu:scripps/logs/train_NER_pheno_enhanced_4895481.txt /home/rohan/Dropbox/UMass\ Amherst/2nd\ Sem
+===========================================================================================================================================
+Baseline:
+
+Segment evaluation (train):
+	        F1	Prec	Recall
+Micro (Seg)	76.16	68.46	85.81
+Macro (Seg)	76.16	68.46	85.81
+-------
+ phenotype	76.16	68.46	85.81
+Processed 7690 tokens with 296 phrases; found: 371 phrases; correct: 254.
+
+Segment evaluation (test):
+	        F1	Prec	Recall
+Micro (Seg)	48.24	44.24	53.04
+Macro (Seg)	48.24	44.24	53.04
+-------
+ phenotype	48.24	44.24	53.04
+Processed 7800 tokens with 362 phrases; found: 434 phrases; correct: 192.
+Testing time: 20 seconds
+
