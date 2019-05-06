@@ -15,7 +15,7 @@ import sys
 
 threshold = float(sys.argv[1]) # any P above this will be set to 1
 # threshold = 0.1
-labels = ['O', 'I-Phenotype']
+labels = ['O', 'I-phenotype']
 
 
 # In[17]:
@@ -41,7 +41,7 @@ with open(data_file) as f:
 # In[20]:
 
 
-text = '' # the output of this script
+text = '\n' # the output of this script
 
 
 # In[21]:

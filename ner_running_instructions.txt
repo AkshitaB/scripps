@@ -19,4 +19,4 @@ srun --partition=titanx-short --gres=gpu:1 ./bin/eval-cnn.sh conf/phenotype_enha
 
 srun --partition=titanx-short --gres=gpu:1 script_to_run.sh
 
-sbatch --job-name=train_NER_pheno_enhanced --output=logs/train_NER_pheno_enhanced_%j.txt -e logs/train_NER_pheno_enhanced_%j.err --partition=titanx-short --gres=gpu:1 --mem=30G script_to_run.sh
+sbatch --job-name=glad_combined --output=logs/glad_combined_%j.txt -e logs/glad_combined_%j.err --partition=titanx-short --gres=gpu:1 --mem=30G glad_combined_script.sh
