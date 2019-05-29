@@ -55,9 +55,12 @@ the current theta range is here: (-1.60996339599, 1.39252637088) so we can try v
 
 sbatch --job-name=train_NER_pheno_enhanced --output=logs/train_NER_pheno_enhanced_%j.txt -e logs/train_NER_pheno_enhanced_%j.err --partition=titanx-short --gres=gpu:1 --mem=30G --mail-user=rohpaul@cs.umass.edu script_to_run.sh
 
-sbatch --job-name=train_NER_pheno_enhanced --output=logs/train_NER_pheno_enhanced_%j.txt -e logs/train_NER_pheno_enhanced_%j.err --partition=titanx-long --gres=gpu:2 --mem=30G script_to_run.sh
+sbatch --job-name=glad_ideal_run --output=logs/glad_ideal_%j.txt -e logs/glad_ideal_%j.err --partition=m40-long --gres=gpu:1 --mem=40G script_to_run1.sh
 
 scp -oProxyCommand="ssh -W %h:%p rohpaul@gypsum-gateway.cs.umass.edu" rohpaul@gypsum.cs.umass.edu:scripps/logs/train_NER_pheno_enhanced_4895481.txt /home/rohan/Dropbox/UMass\ Amherst/2nd\ Sem
+
+scp -oProxyCommand="ssh -W %h:%p rohpaul@gypsum-gateway.cs.umass.edu" glad_combined_*.txt rohpaul@gypsum.cs.umass.edu:scripps/dataset/M2C_new_labels/
+
 ===========================================================================================================================================
 Baseline:
 
